@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.AnonymousDsl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -20,16 +21,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/anonymous").hasRole("GUEST")
+                        .requestMatchers("/anonymousContext", "/authentication").permitAll()
+                        .anyRequest().authenticated()
+                )
+
                 .formLogin(Customizer.withDefaults())
-                .rememberMe(rememberBe -> rememberBe
-                        .alwaysRemember(true)
-                        .tokenValiditySeconds(3600)
-                        .userDetailsService(userDetailsService())
-                        .rememberMeParameter("remember")
-                        .rememberMeCookieName("remember")
-                        .key("security")
+                .anonymous(anonymous -> anonymous
+                        .principal("GUEST")
+                        .authorities("ROLE_GUEST")
+
                 );
+
         return http.build();
     }
 
