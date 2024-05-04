@@ -20,24 +20,22 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 @Slf4j
-public class SecurityConfig2 {
+public class SecurityConfig3 {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   AuthenticationManagerBuilder builder,
-                                                   AuthenticationConfiguration configuration) throws Exception {
-        AuthenticationManagerBuilder managerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        managerBuilder.authenticationProvider(customAuthenticationProvider());
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        ProviderManager authenticationManager = (ProviderManager) configuration.getAuthenticationManager();
-        authenticationManager.getProviders().remove(0);
-        builder.authenticationProvider(new DaoAuthenticationProvider());
+        AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        builder.authenticationProvider(customAuthenticationProvider());
+        builder.authenticationProvider(customAuthenticationProvider2());
 
         http
                 .authorizeHttpRequests(auth -> auth
 //                        .requestMatchers("/").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
+//                .authenticationProvider(new CustomAuthenticationProvider())
+//                .authenticationProvider(new CustomAuthenticationProvider2())
         ;
 
         return http.build();
@@ -46,6 +44,11 @@ public class SecurityConfig2 {
     @Bean
     public AuthenticationProvider customAuthenticationProvider() {
         return new CustomAuthenticationProvider();
+    }
+
+    @Bean
+    public AuthenticationProvider customAuthenticationProvider2() {
+        return new CustomAuthenticationProvider2();
     }
 
     @Bean
