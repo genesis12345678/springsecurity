@@ -29,10 +29,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
                 .sessionManagement(session -> session
-                        .invalidSessionUrl("/invalidSession")
-                        .maximumSessions(1)
-                        .maxSessionsPreventsLogin(false)
-                        .expiredUrl("/expiredSession")
+                        .sessionFixation(sessionFixation -> sessionFixation
+                                .none()
+                        )
                 )
         ;
 
