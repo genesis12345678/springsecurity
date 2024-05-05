@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,10 +25,15 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/invalidSession", "/expiredSession").permitAll()
                         .anyRequest().authenticated())
-//                .formLogin(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(Customizer.withDefaults())
+                .sessionManagement(session -> session
+                        .invalidSessionUrl("/invalidSession")
+                        .maximumSessions(1)
+                        .maxSessionsPreventsLogin(false)
+                        .expiredUrl("/expiredSession")
+                )
         ;
 
         return http.build();
