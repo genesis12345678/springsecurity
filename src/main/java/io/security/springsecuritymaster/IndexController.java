@@ -79,6 +79,16 @@ public class IndexController {
         return "csrf 적용됨";
     }
 
+    @PostMapping("/formCsrf")
+    public CsrfToken formCsrf(CsrfToken csrfToken) {
+        return csrfToken;
+    }
+
+    @PostMapping("/cookieCsrf")
+    public CsrfToken cookieCsrf(CsrfToken csrfToken) {
+        return csrfToken;
+    }
+
     @GetMapping("/csrfToken")
     public String csrfToken(HttpServletRequest request) {
         CsrfToken csrfToken1 = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
