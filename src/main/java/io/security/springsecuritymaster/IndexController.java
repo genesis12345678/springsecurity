@@ -9,16 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequiredArgsConstructor
 public class IndexController {
-
-    private final SessionInfoService service;
-
-    @GetMapping("/sessionInfo")
-    public String sessionInfo() {
-        service.sessionInfo();
-        return "sessionInfo";
-    }
 
     @GetMapping("/")
     public Authentication index(Authentication authentication) {
@@ -26,8 +17,18 @@ public class IndexController {
     }
 
     @GetMapping("/loginPage")
-    public String login() {
+    public String loginPage() {
         return "loginPage";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
+
+    @GetMapping("/denied")
+    public String denied() {
+        return "denied";
     }
 
     @GetMapping("/home")
