@@ -22,20 +22,10 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login").permitAll()
-                        .requestMatchers("/admin").hasRole("ADMIN")
+                        .requestMatchers("/csrf").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            log.info(authException.getMessage());
-                            response.sendRedirect("/login");
-                        })
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            log.info(accessDeniedException.getMessage());
-                            response.sendRedirect("/denied");
-                        })
-                )
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/csrf"))
         ;
 
         return http.build();
