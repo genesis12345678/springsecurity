@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -30,6 +31,7 @@ import java.beans.Introspector;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @Slf4j
 public class SecurityConfig {
 
@@ -44,20 +46,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    @Order(1)
-    public SecurityFilterChain securityFilterChain2(HttpSecurity http) throws Exception {
-
-        http
-                .securityMatchers(matchers -> matchers
-                        .requestMatchers("/api/**", "/oauth/**"))
-
-                .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().permitAll())
-        ;
-        return http.build();
-    }
-
 
    @Bean
     public UserDetailsService userDetailsService() {
@@ -66,7 +54,7 @@ public class SecurityConfig {
                 .roles("USER")
                 .build();
 
-        UserDetails manager = User.withUsername("manager")
+        UserDetails manager = User.withUsername("db")
                 .password("{noop}1111")
                 .roles("DB")
                 .build();
