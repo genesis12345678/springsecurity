@@ -31,7 +31,7 @@ import java.beans.Introspector;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 @Slf4j
 public class SecurityConfig {
 
