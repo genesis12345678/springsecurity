@@ -25,4 +25,14 @@ public class RestController {
     public String admin(){
         return "admin";
     }
+
+    @GetMapping("/api/photos")
+    public String photos(){
+        return "photos";
+    }
+
+    @GetMapping("/oauth/login")
+    public String oauth(){
+        return "oauthLogin";
+    }
 }

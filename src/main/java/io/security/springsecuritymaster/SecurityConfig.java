@@ -5,6 +5,7 @@ import org.apache.catalina.util.Introspection;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -31,55 +32,28 @@ import java.beans.Introspector;
 @EnableWebSecurity
 @Slf4j
 public class SecurityConfig {
-/*
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
+    public SecurityFilterChain securityFilterChain1(HttpSecurity http) throws Exception {
 
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/user/{name}")
-                        .access(new WebExpressionAuthorizationManager("#name == authentication.name"))
-
-                        .requestMatchers("/admin/db")
-                        .access(new WebExpressionAuthorizationManager("hasAnyAuthority('ROLE_DB') or hasAnyAuthority('ROLE_ADMIN')"))
-
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
         ;
         return http.build();
     }
-*/
-/*
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, ApplicationContext context) throws Exception {
-
-        DefaultHttpSecurityExpressionHandler expressionHandler = new DefaultHttpSecurityExpressionHandler();
-        expressionHandler.setApplicationContext(context);
-
-        WebExpressionAuthorizationManager authorizationManager =
-                new WebExpressionAuthorizationManager("@customWebSecurity.check(authentication, request)");
-
-        authorizationManager.setExpressionHandler(expressionHandler);
-
-        http
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/custom/**").access(authorizationManager)
-                        .anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults())
-        ;
-        return http.build();
-    }
-*/
-
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, ApplicationContext context) throws Exception {
+    @Order(1)
+    public SecurityFilterChain securityFilterChain2(HttpSecurity http) throws Exception {
 
         http
+                .securityMatchers(matchers -> matchers
+                        .requestMatchers("/api/**", "/oauth/**"))
+
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(new CustomRequestMatcher("/admin")).hasAuthority("ROLE_ADMIN")
-                        .anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults())
+                        .anyRequest().permitAll())
         ;
         return http.build();
     }
