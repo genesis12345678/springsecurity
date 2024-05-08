@@ -8,6 +8,6 @@ public class ViewController {
 
     @GetMapping("/method")
     public String method() {
-        return "method";
+        return "index";
     }
 }
