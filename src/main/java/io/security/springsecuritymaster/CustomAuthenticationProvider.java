@@ -1,32 +1,38 @@
 package io.security.springsecuritymaster;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationContext;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.event.AuthenticationFailureProviderNotFoundEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
-    private final ApplicationContext applicationEventPublisher;
+    private final AuthenticationEventPublisher authenticationEventPublisher;
+
+    public CustomAuthenticationProvider(AuthenticationEventPublisher authenticationEventPublisher) {
+        this.authenticationEventPublisher = authenticationEventPublisher;
+    }
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        if (!authentication.getName().equals("user")) {
+        if (authentication.getName().equals("admin")) {
 
-            applicationEventPublisher.publishEvent(
-                    new AuthenticationFailureProviderNotFoundEvent(authentication, new BadCredentialsException("BadCredentialsException"))
+           authenticationEventPublisher.publishAuthenticationFailure(
+                   new CustomException("CustomException"), authentication
+           );
+
+            throw new CustomException("CustomException");
+
+        } else if (authentication.getName().equals("db")) {
+
+            authenticationEventPublisher.publishAuthenticationFailure(
+                    new DefaultAuthenticationException("DefaultAuthenticationException"), authentication
             );
 
-            throw new BadCredentialsException("BadCredentialsException");
+            throw new DefaultAuthenticationException("DefaultAuthenticationException");
         }
 
         UserDetails user = User.withUsername("user").password("{noop}1111").roles("USER").build();

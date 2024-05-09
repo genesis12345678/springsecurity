@@ -1,39 +1,26 @@
 package io.security.springsecuritymaster;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
-import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
-import org.springframework.security.authorization.AuthorityAuthorizationManager;
-import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.core.GrantedAuthorityDefaults;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
-import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
-import org.springframework.security.web.util.matcher.AnyRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcherEntry;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -48,25 +35,32 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/user").hasAuthority("ROLE_USER")
+                        .requestMatchers("/db").hasAuthority("ROLE_DB")
+                        .requestMatchers("/admin").hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated())
-                .formLogin(form -> form.successHandler((request, response, authentication) -> {
-                    eventPublisher.publishEvent(new CustomAuthenticationSuccessEvent(authentication));
-                    response.sendRedirect("/");
-                }))
-                .authenticationProvider(customAuthenticationProvider2())
+                .formLogin(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
+                .authenticationProvider(customAuthenticationProvider())
         ;
         return http.build();
     }
 
     @Bean
-    public CustomAuthenticationProvider2 customAuthenticationProvider2() {
-        return new CustomAuthenticationProvider2(eventPublisher(null));
+    public AuthenticationProvider customAuthenticationProvider() {
+        return new CustomAuthenticationProvider(customAuthenticationProviderEventPublisher(null));
     }
 
     @Bean
-    public DefaultAuthenticationEventPublisher eventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-        return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
+    public AuthenticationEventPublisher customAuthenticationProviderEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        Map<Class<? extends AuthenticationException>, Class<? extends AbstractAuthenticationFailureEvent>> mapping =
+                Collections.singletonMap(CustomException.class, CustomAuthenticationFailureEvent.class);
+
+        DefaultAuthenticationEventPublisher authenticationEventPublisher = new DefaultAuthenticationEventPublisher();
+        authenticationEventPublisher.setAdditionalExceptionMappings(mapping);
+        authenticationEventPublisher.setDefaultAuthenticationFailureEvent(DefaultAuthenticationFailureEvent.class);
+
+        return authenticationEventPublisher;
     }
 
    @Bean
