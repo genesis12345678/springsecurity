@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 
 @Configuration
 @EnableWebSecurity
@@ -25,18 +26,14 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/user").hasRole("USER")
-                        .requestMatchers("/db").hasRole("DB")
-                        .requestMatchers("/admin").hasRole("ADMIN")
+                        .requestMatchers("/db").access(new WebExpressionAuthorizationManager("hasRole('DB')"))
+                        .requestMatchers("/admin").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/secure").access(new CustomAuthorizationManager())
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
         ;
         return http.build();
-    }
-
-    @Bean
-    public GrantedAuthorityDefaults grantedAuthorityDefaults() {
-        return new GrantedAuthorityDefaults("MYPREFIX_");
     }
 
    @Bean
@@ -48,12 +45,12 @@ public class SecurityConfig {
 
         UserDetails manager = User.withUsername("db")
                 .password("{noop}1111")
-                .authorities("MYPREFIX_DB")
+                .roles("DB")
                 .build();
 
        UserDetails admin = User.withUsername("admin")
                .password("{noop}1111")
-               .authorities("MYPREFIX_ADMIN", "MYPREFIX_SECURE")
+               .roles("ADMIN", "SECURE")
                .build();
 
         return new InMemoryUserDetailsManager(user, manager, admin);
