@@ -32,6 +32,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springframework.session/spring-session-core
     implementation 'org.springframework.session:spring-session-core:3.2.1'
 
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 }
 
 tasks.named('test') {
