@@ -1,31 +1,47 @@
 package io.security.springsecuritymaster;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationTrustResolver;
+import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 public class IndexController {
 
+    AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
+
     @GetMapping("/")
     public String index() {
-        return "index";
+        Authentication authentication = SecurityContextHolder.getContextHolderStrategy().getContext().getAuthentication();
+        return trustResolver.isAnonymous(authentication) ? "anonymous" : "authenticated";
     }
 
     @GetMapping("/user")
-    public String user() {
-        return "user";
+    public User user(@AuthenticationPrincipal User user) {
+        return user;
+    }
+
+    @GetMapping("/user2")
+    public String user2(@AuthenticationPrincipal(expression = "username") String username) {
+        return username;
+    }
+
+    @GetMapping("/currentUser")
+    public User currentUser(@CurrentUser User user) {
+        return user;
+    }
+
+    @GetMapping("/currentUser2")
+    public String currentUser2(@CurrentUsername String username) {
+        return username;
     }
 
     @GetMapping("/db")
@@ -36,21 +52,5 @@ public class IndexController {
     @GetMapping("/admin")
     public String admin() {
         return "admin";
-    }
-
-    @GetMapping("/login")
-    public String login(HttpServletRequest request, @ModelAttribute MemberDto memberDto) throws ServletException {
-        request.login(memberDto.getUsername(), memberDto.getPassword());
-        log.info("login is successful");
-        return "login";
-    }
-
-    @GetMapping("/users")
-    public List<MemberDto> users(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        boolean authenticate = request.authenticate(response);
-        if (authenticate) {
-            return List.of(new MemberDto("user1", "1111"));
-        }
-        return Collections.emptyList();
     }
 }
