@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class IndexController {
 
-    private final DataService dataService;
 
     @GetMapping("/")
     public String index() {
@@ -18,16 +17,17 @@ public class IndexController {
 
     @GetMapping("/user")
     public String user() {
-        return dataService.getUser();
+        return "user";
     }
 
-    @GetMapping("/owner")
-    public Account user(@RequestParam("name") String name) {
-        return dataService.getOwner(name);
+    @GetMapping("/db")
+    public String db() {
+        return "db";
     }
 
-    @GetMapping("/display")
-    public String display() {
-        return dataService.display();
+    @GetMapping("/admin")
+    public String admin() {
+        return "admin";
     }
+
 }
