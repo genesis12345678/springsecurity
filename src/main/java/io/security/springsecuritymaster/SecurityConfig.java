@@ -1,13 +1,11 @@
 package io.security.springsecuritymaster;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,23 +14,33 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Bean
+    @Order
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/user").hasAuthority("ROLE_USER")
-                        .requestMatchers("/db").hasAuthority("ROLE_DB")
-                        .requestMatchers("/admin").hasAuthority("ROLE_ADMIN")
                         .anyRequest().permitAll())
                 .formLogin(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
         ;
 
-        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+        return http.build();
+    }
+
+    @Bean
+    @Order(1)
+    public SecurityFilterChain securityFilterChain2(HttpSecurity http) throws Exception {
+
+        http
+                .securityMatchers(matchers -> matchers
+                        .requestMatchers("/api/**"))
+
+                .authorizeHttpRequests(authorize -> authorize
+                        .anyRequest().permitAll())
+        ;
+
         return http.build();
     }
 
